@@ -1,0 +1,8 @@
+#/bin/sh
+
+SCRIPT_DIR={script_dir}
+PYTHON_PATH={python_path}
+
+
+cd $SCRIPT_DIR
+$PYTHON_PATH main.py -d request_cache.db {username}

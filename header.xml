@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="https://search.yahoo.com/mrss/">
+    <title>{artist} - Latest Releases</title>
+    <subtitle>A RSS feed containing the latest releases of {artist}.</subtitle>
+    <updated>{last_update}</updated>
+    <link href="{artist_url}" rel="alternate" type="text/html"/>
+    <icon>https://s4.bcbits.com/img/favicon/favicon-16x16.png</icon>
+    <logo>https://s4.bcbits.com/img/favlogo/favlogo-32x32.png</logo>
+    <id>{artist_id}</id>
+{items}
+</feed>

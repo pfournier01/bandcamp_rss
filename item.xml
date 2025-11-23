@@ -1,0 +1,8 @@
+<entry>
+    <id>{artist_id}-{album_id}</id>
+    <link href="{album_link}" rel="self"/>
+    <title>{album_name}</title>
+    <updated>{album_release}</updated>
+    <author><name>{artist_name}</name></author>
+    <link href="{image_url}" rel="enclosure"/>
+</entry>

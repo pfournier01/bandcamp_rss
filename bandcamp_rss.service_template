@@ -1,0 +1,6 @@
+[Unit]
+Description=Update bandcamp RSS feed files
+
+[Service]
+Type=oneshot
+ExecStart={python_path} {script_path} {username}
