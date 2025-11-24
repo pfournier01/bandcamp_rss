@@ -8,6 +8,7 @@ def create_parser():
     parser.add_argument("username", type=str, help="Username of the bandcamp user for whom to generate the feed")
     parser.add_argument("-d", "--database", default="request_cache.db", required=False, type=str, help="Path of the database used to cache requests. Default: 'request_cache.db'.")
     parser.add_argument("-p", "--prefix", default="", required=False, type=str, help="Prefix of the feed files. Default: ''")
+    parser.add_argument("--force", action='store_true', help="Force wiping existing cache if conflict")
     return parser
     
 
@@ -18,8 +19,9 @@ def main():
     username = arguments.username
     database_path = arguments.database
     feed_prefix = arguments.prefix
+    force = arguments.force
 
-    db_manager = AlbumDatabaseManager(database_path, force=False)
+    db_manager = AlbumDatabaseManager(database_path, force=force)
     followed_artists_urls, _ = get_followed_artists_urls(username)
     updated = {}
     for artist_url in followed_artists_urls:
@@ -30,7 +32,7 @@ def main():
 
     if len(updated) > 0:
         # create the new ones
-        created_feeds = initialize_rss_feed(feed_prefix, db_manager, force=False)
+        created_feeds = initialize_rss_feed(feed_prefix, db_manager, force=force)
         for artist_id in created_feeds:
             if artist_id in updated:
                 del updated[artist_id]

@@ -108,11 +108,11 @@ class DatabaseManager():
         return self.cursor.execute(query)
 
     def select_simple(self, table, columns):
-        query = f"SELECT {", ".join(columns)} FROM {table}"
+        query = f"SELECT {', '.join(columns)} FROM {table}"
         return self.execute_query(query)
 
     def select_filter(self, table, columns, filter_):
-        query = f"SELECT {", ".join(columns)} FROM {table} WHERE {str(filter_)}"
+        query = f"SELECT {', '.join(columns)} FROM {table} WHERE {str(filter_)}"
         return self.execute_query(query)
 
 
@@ -140,7 +140,8 @@ class AlbumDatabaseManager(DatabaseManager):
         file_exists = os.path.isfile(self.db_path)
         if file_exists:
             tables = self.cursor.execute("SELECT Name FROM SQLITE_SCHEMA")
-            tables = list(tables)
+            # iterator of tuples, we flatten it
+            tables = sum([list(t) for t in tables], start=[])
             if self.TABLE_NAME not in tables:
                 if len(tables) == 0:
                     return InitializedStatus.TABLE_DOES_NOT_EXIST
@@ -163,24 +164,23 @@ class AlbumDatabaseManager(DatabaseManager):
     def init_db(self, force):
         def create_table():
             columns_desc = [
-                f"{c_name} {c_type},"
+                f"{c_name} {c_type}"
                 for c_name, c_type
                 in zip(self.COLUMNS, self.COLUMN_TYPES)
             ]
-            columns_desc = "\n".join(columns_desc)
+            columns_desc = ",\n".join(columns_desc)
             query = f"CREATE TABLE {self.TABLE_NAME} ( {columns_desc} )"
             self.cursor.execute(query)
 
         def wipe_table():
             self.cursor.execute(f"DROP TABLE {self.TABLE_NAME}")
 
-        try:
-            initialized_status = self.is_db_initialized()
-            if not initialized_status:
-                if initialized_status == InitializedStatus.COLUMNS_DO_NOT_EXIST:
-                    if force:
-                        wipe_table()
-                    else:
-                        raise DatabaseError(f"Table {self.TABLE_NAME} exists but it has no columns. Why does this happen??")
-                create_table()
-                return None
+        initialized_status = self.is_db_initialized()
+        if not initialized_status:
+            if initialized_status == InitializedStatus.COLUMNS_DO_NOT_EXIST:
+                if force:
+                    wipe_table()
+                else:
+                    raise DatabaseError(f"Table {self.TABLE_NAME} exists but it has no columns. Why does this happen??")
+            create_table()
+            return None

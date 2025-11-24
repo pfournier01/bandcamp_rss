@@ -1,5 +1,6 @@
-from dataclasses import dataclass
-from database import AlbumDatabaseManager, Filter
+from dataclasses import dataclass, fields
+from database import AlbumDatabaseManager, Filter, FilterAtom
+import datetime
 
 class AlbumError(Exception):
     pass
@@ -18,7 +19,7 @@ class AlbumSpec:
                 db.TABLE_NAME, "*",
                 Filter.And([
                     FilterAtom.Equal("IDArtist", f"{self.artist_id}"),
-                FilterAtom.Equal("IDALbum", f"{self.album_id}")
+                    FilterAtom.Equal("IDALbum", f"{self.album_id}")
                 ])
         )
         matching_albums_id = result.fetchall()
@@ -44,7 +45,7 @@ class FullAlbumSpec(AlbumSpec):
         return cls(**arg_dict, release_date=release_date)
 
     def add_to_db(self, db: AlbumDatabaseManager):
-        return db.insert(db.TABLE_NAME,
+        res = db.insert(db.TABLE_NAME,
                   (
                   self.title,
                   self.url,
@@ -55,4 +56,6 @@ class FullAlbumSpec(AlbumSpec):
                   self.release_date
                   )
                 )
+        db.connector.commit()
+        return res
 
