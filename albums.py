@@ -19,7 +19,7 @@ class AlbumSpec:
                 db.TABLE_NAME, "*",
                 Filter.And([
                     FilterAtom.Equal("IDArtist", f"{self.artist_id}"),
-                    FilterAtom.Equal("IDALbum", f"{self.album_id}")
+                    FilterAtom.Equal("IDAlbum", f"{self.album_id}")
                 ])
         )
         matching_albums_id = result.fetchall()
