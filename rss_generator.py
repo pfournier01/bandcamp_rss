@@ -4,13 +4,13 @@ import os
 from utils import adapt_date_iso
 import datetime
 
-def which_feed_to_create(rss_prefix, db:AlbumDatabaseManager):
+def which_feed_to_create(feed_location, db:AlbumDatabaseManager):
     all_albums_in_db = db.select_simple(db.TABLE_NAME, "*").fetchall()
     all_albums_in_db = [FullAlbumSpec(*album) for album in all_albums_in_db]
-    artists = set([album.artist_id for album in all_albums_in_db])
+    artists = set([album.artist_name for album in all_albums_in_db])
     to_create = []
-    for artist_id in artists:
-        artist_rss_path = f"{rss_prefix}_{artist_id}.atom"
+    for artist_name in artists:
+        artist_rss_path = os.path.join(feed_location, f"{artist_name}.atom")
         if not os.path.isfile(artist_rss_path):
             to_create.append(artists)
     return to_create
@@ -27,13 +27,22 @@ def feed_item_from_album(album: FullAlbumSpec, item_template: str):
     return item
 
 
-def initialize_rss_feed(rss_prefix, db:AlbumDatabaseManager, force=False):
+def initialize_rss_feed(
+        feed_location,
+        followed_artists_names,
+        db:AlbumDatabaseManager,
+        force=False
+    ):
     all_albums_in_db = db.select_simple(db.TABLE_NAME, "*").fetchall()
     all_albums_in_db = [FullAlbumSpec(*album) for album in all_albums_in_db]
-    artists = set([album.artist_id for album in all_albums_in_db])
+    artists = set([
+        (album.artist_name, album.artist_id)
+        for album in all_albums_in_db
+        if album.url.removeprefix("https://").split('.')[0] in followed_artists_names
+    ])
     created_feeds = []
-    for artist_id in artists:
-        artist_rss_path = f"{rss_prefix}_{artist_id}.atom"
+    for artist_name, artist_id in artists:
+        artist_rss_path = os.path.join(feed_location, f"{artist_name}.atom")
         if os.path.isfile(artist_rss_path):
             # feed already exists
             if not force:
@@ -66,10 +75,10 @@ def initialize_rss_feed(rss_prefix, db:AlbumDatabaseManager, force=False):
             rss_fd.write(rss)
     return created_feeds
 
-def update_rss_feed(rss_prefix:str, db:AlbumDatabaseManager, artist_id:int, albums: list[FullAlbumSpec]):
+def update_rss_feed(feed_location:str, db:AlbumDatabaseManager, artist_name:str, albums: list[FullAlbumSpec]):
     with open('item.xml', 'r') as item_fd:
         item_template = item_fd.read()
-    artist_rss_path = f"{rss_prefix}_{artist_id}.atom"
+    artist_rss_path = os.path.join(feed_location, f"{artist_name}.atom")
     with open(artist_rss_path, 'r') as feed_fd:
         feed = feed_fd.read()
     # header: rows 0-8
